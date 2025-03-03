@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Remote Host (650ef84f-5963-47c7-aa6e-8f6f1f05f9c4)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+    <option name="confirmBeforeUploading" value="false" />
+    <serverData>
+      <paths name="Remote Host (650ef84f-5963-47c7-aa6e-8f6f1f05f9c4)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/app/source/cvs" local="$PROJECT_DIR$" />
+            <mapping deploy="/app/renderers" local="$APPLICATION_HOME_DIR$/bin/gdb/renderers" />
+            <mapping deploy="/app/source/cvs/cmake-build-debug-remote-host" local="$PROJECT_DIR$/cmake-build-debug-remote-host/cvs_app" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-remote-host" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-remote-host" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

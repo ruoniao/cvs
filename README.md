@@ -1,0 +1,1 @@
+A simplified Open vSwitch implementation, named Close vSwitch (cvs), for demonstration and learning purposes.
