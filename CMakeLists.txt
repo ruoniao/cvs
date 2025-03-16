@@ -5,35 +5,34 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 add_compile_options(-g)
 
-# 添加第三方库 cJSON
+
+# 添加 cJSON 库
 add_library(cjson third-party/cJSON/cJSON.c)
 target_include_directories(cjson PUBLIC ${CMAKE_SOURCE_DIR}/third-party/cJSON)
 
-# 递归收集所有 .c 文件（排除 third-party/cJSON/tests 目录）
+# 递归收集所有源文件（排除 third-party/cJSON/tests）
 file(GLOB_RECURSE ALL_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/src/*.c
         ${CMAKE_SOURCE_DIR}/include/cvs/*.c
-        ${CMAKE_SOURCE_DIR}/lib/*.c
+        ${CMAKE_SOURCE_DIR}/include/cvsdb/*.c
+        ${CMAKE_SOURCE_DIR}/include/utils/*.c
         )
 
-# 过滤掉包含 "third-party/cJSON/tests/" 的文件
 list(FILTER ALL_SOURCES EXCLUDE REGEX "third-party/cJSON/tests/.*")
 
-# 定义库
-add_library(cvs_lib ${ALL_SOURCES})
-target_include_directories(cvs_lib PUBLIC
+# 定义可执行文件，直接包含所有源文件
+add_executable(cvs vswitchd/cvs-vswitchd.c ${ALL_SOURCES})
+
+# 设置头文件搜索路径（包含目录)
+set(CMAKE_INCLUDE_PATH
         ${CMAKE_SOURCE_DIR}/lib
         ${CMAKE_SOURCE_DIR}/third-party/cJSON
         ${CMAKE_SOURCE_DIR}/include
         )
+target_include_directories(cvs PUBLIC ${CMAKE_INCLUDE_PATH})
 
-# 定义可执行文件
-add_executable(cvs vswitchd/cvs-vswitchd.c)
-target_include_directories(cvs PUBLIC
-        ${CMAKE_SOURCE_DIR}/lib
-        ${CMAKE_SOURCE_DIR}/third-party/cJSON
-        ${CMAKE_SOURCE_DIR}/include
-        )
+# 设置在链接阶段需要链接的库，这里是 cJSON 库
+target_link_libraries(cvs cjson)
 
-# 链接库
-target_link_libraries(cvs cvs_lib cjson)
+
+message(STATUS "Include directories: ${CMAKE_INCLUDE_PATH}")
+message(STATUS "Source files: ${ALL_SOURCES}")

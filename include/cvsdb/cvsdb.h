@@ -9,6 +9,7 @@
 
 struct CvsDb{
     cJSON *root;
+    char *db_path;
 };
 
 struct CvsPort {
@@ -21,7 +22,6 @@ struct CvsPort {
 
 struct CvsBridge{
     char *name;
-    char *bridge;
     struct CvsPort *port;
 };
 
@@ -31,13 +31,15 @@ struct CvsFlow{
     char *in_port;
     char *out_port;
 };
-struct CvsDb *db;
 
-int cvsdb_init(const char *db_path);
+int cvsdb_init(char *db_path);
+int cvsdb_init_data();
+int cvsdb_flush();
 int cvsdb_free();
 
-int cvsdb_add_bridge(const char *bridge_name);
-int cvsdb_del_bridge(const char *bridge_name);
+int cvsdb_add_bridge(struct CvsBridge *bridge);
+struct CvsDb *cvsdb_get_bridge(struct CvsBridge *bridge);
+int cvsdb_del_bridge(struct CvsBridge *bridge);
 
 
 int cvsdb_add_port(struct CvsDb bridge_nam, struct CvsPort *port_name);

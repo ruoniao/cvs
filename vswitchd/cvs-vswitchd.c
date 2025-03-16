@@ -13,27 +13,25 @@ struct DefaultConfig *default_config;
 
 int main(int argc, char *argv[]){
 
-
+    /* 解析argc命令参数 */
     cmd_parse_option(argc, argv);
 
+    /*初始化cvs_config*/
     cvs_config_init(cmd_get_option("config"),&cvs_config);
     default_config = cvs_config_get_default(cvs_config);
 
+    /*初始化cvs_log*/
     int res = cvs_log_init(default_config->log_path, default_config->debug, 1 * 1024 * 10, 5);
     if(res == -1){
         printf("init log failed\n");
         return -1;
     }
 
-
-    LOG_INFO("Hello, LOG_INFO!");
-    LOG_DEBUG("Hello, LOG_DEBUG!");
-    LOG_ERROR("Hello, LOG_ERROR!");
-    /*解析命令行args --db xx.json*/
-    //parse_cmd(argc, argv);
-
     /*初始化cvsdb*/
+    cvsdb_init(default_config->db_path);
 
+
+    //cvsdb_add_bridge();
     /*初始化cvs-vswitchd 支持启动unix/tcp 与csv-ctl 通讯*/
 
     /*初始化cvs-vswitchd的网桥*/
@@ -42,8 +40,9 @@ int main(int argc, char *argv[]){
 
     /*初始化cvs-vswitchd的流表*/
 
-cleamup:
+cleanup:
     free(cvs_config);
+    cvsdb_free();
 //    cvs_config_cleanup();
 //    cvs_log_cleanup();
     return 1 ;
