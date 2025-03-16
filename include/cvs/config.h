@@ -10,26 +10,22 @@
 #include <string.h>
 #include <stdbool.h>
 
+struct DefaultConfig {
+    char *db_path;
+    char *log_path;
+    char *unix_path;
+    char *tcp_path;
+    bool debug;
+};
+
 struct CvsConfig {
-    struct default_config {
-        char *db_path;
-        char *log_path;
-        char *unix_path;
-        char *tcp_path;
-        bool debug;
-    } default_config;
+    struct DefaultConfig *default_config;
 };
 
-struct CvsConfig cvs_config = {
-        .default_config = {
-                .db_path = "/var/log/cvs/cvs.db",
-                .log_path = "/var/log/cvs/cvs.log",
-                .unix_path = "/var/log/cvs/cvs.sock",
-                .tcp_path = "",
-                .debug = false
-        }
-};
 
-int cvs_config_init(const char *config_path);
+int cvs_config_init(const char *config_path,struct CvsConfig **cvs_config);
+
+/*获取配置函数*/
+struct DefaultConfig *cvs_config_get_default(struct CvsConfig *cvs_config);
 
 #endif //CVS_CONFIG_H

@@ -8,7 +8,7 @@
 #include "cJSON.h"
 
 struct CvsDb{
-    cJson *root;
+    cJSON *root;
 };
 
 struct CvsPort {
@@ -40,10 +40,10 @@ int cvsdb_add_bridge(const char *bridge_name);
 int cvsdb_del_bridge(const char *bridge_name);
 
 
-int cvsdb_add_port(struct CvsDb bridge_nam ,struct CvsPort *port_name);
-int cvsdb_del_port(struct CvsDb bridge_name,struct CvsPort *port_name);
+int cvsdb_add_port(struct CvsDb bridge_nam, struct CvsPort *port_name);
+int cvsdb_del_port(struct CvsDb bridge_name, struct CvsPort *port_name);
 
-int cvsdb_add_flow(, struct CvsPort *bridge_name,const char *flow_name);
+int cvsdb_add_flow(struct CvsDb bridge_name, const char *flow_name);
 
 
 #endif //CVS_CSVDB_H

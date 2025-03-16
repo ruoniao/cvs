@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "config.h"
+#include <stdlib.h>
 
 struct CvsCmdConfig {
     char *config;
@@ -17,7 +17,7 @@ struct CvsCmdConfig {
     char *tcp;
 };
 
-struct CvsCmdConfig cvs_cmd_config;
 int cmd_parse_option(int argc, char *argv[]);
+char *cmd_get_option(const char *key);
 
 #endif //CVS_CMD_H

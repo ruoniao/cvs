@@ -2,17 +2,24 @@
 // Created by zhaogang on 2025-03-01.
 //
 #include <stdio.h>
-#include "cvs/clog.c"
-#include "cvs/config.c"
-#include "cvs/cmd.c"
+#include "cvs/clog.h"
+#include "cvs/config.h"
+#include "cvs/cmd.h"
+#include "cvsdb/cvsdb.h"
+
+struct CvsConfig *cvs_config;
+struct DefaultConfig *default_config;
+
 
 int main(int argc, char *argv[]){
 
+
     cmd_parse_option(argc, argv);
 
-    cvs_config_init(cvs_cmd_config.config);
+    cvs_config_init(cmd_get_option("config"),&cvs_config);
+    default_config = cvs_config_get_default(cvs_config);
 
-    int res = cvs_log_init(cvs_config.default_config.log_path, cvs_config.default_config.debug, 1 * 1024 * 10, 5);
+    int res = cvs_log_init(default_config->log_path, default_config->debug, 1 * 1024 * 10, 5);
     if(res == -1){
         printf("init log failed\n");
         return -1;
@@ -34,5 +41,10 @@ int main(int argc, char *argv[]){
     /*初始化cvs-vswitchd的net管理，支持poll/epoll/dpdk模式收发*/
 
     /*初始化cvs-vswitchd的流表*/
+
+cleamup:
+    free(cvs_config);
+//    cvs_config_cleanup();
+//    cvs_log_cleanup();
     return 1 ;
 }

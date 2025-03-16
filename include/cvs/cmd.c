@@ -4,8 +4,9 @@
 
 #include "cmd.h"
 
-int
-cmd_parse_option(int argc, char *argv[]){
+static struct CvsCmdConfig cvs_cmd_config;
+
+int cmd_parse_option(int argc, char *argv[]){
     for(int i = 0; i < argc; i++){
         if(strcmp(argv[i], "--config") == 0){
             cvs_cmd_config.config = argv[i+1];
@@ -35,4 +36,23 @@ cmd_parse_option(int argc, char *argv[]){
         }
     }
     return 1;
+}
+
+char *cmd_get_option(const char *key){
+    if(strcmp(key, "config") == 0){
+        return cvs_cmd_config.config;
+    }
+    if(strcmp(key, "db") == 0){
+        return cvs_cmd_config.db;
+    }
+    if(strcmp(key, "log") == 0){
+        return cvs_cmd_config.log;
+    }
+    if(strcmp(key, "unix") == 0){
+        return cvs_cmd_config.unix_path;
+    }
+    if(strcmp(key, "tcp") == 0){
+        return cvs_cmd_config.tcp;
+    }
+    return NULL;
 }

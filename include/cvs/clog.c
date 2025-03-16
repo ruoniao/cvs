@@ -5,6 +5,14 @@
 #include "clog.h"
 
 
+static Logger logger = {
+    .bash_path = "/var/log/cvs/cvs.log",
+    .level = CVS_LOG_INFO,
+    .size = 1024 * 1024 * 10,
+    .max_files = 5,
+    .fp = NULL,
+    .mutex = PTHREAD_MUTEX_INITIALIZER
+};
 
 /*
  * 初始化日志

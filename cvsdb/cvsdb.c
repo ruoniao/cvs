@@ -2,8 +2,8 @@
 // Created by zhaogang on 2025-03-01.
 //
 
+#include <stdlib.h>
 #include "cvsdb.h"
-
 
 int init_cvsdb(const char *db_path){
     db = (struct CvsDb *)malloc(sizeof(struct CvsDb));
