@@ -31,7 +31,9 @@ int main(int argc, char *argv[]){
     cvsdb_init(default_config->db_path);
 
 
-    //cvsdb_add_bridge();
+    /* 初始化网卡驱动类 */
+    netdev_init();
+
     /*初始化cvs-vswitchd 支持启动unix/tcp 与csv-ctl 通讯*/
 
     /*初始化cvs-vswitchd的网桥*/

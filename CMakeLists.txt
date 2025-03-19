@@ -15,6 +15,7 @@ file(GLOB_RECURSE ALL_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/include/cvs/*.c
         ${CMAKE_SOURCE_DIR}/include/cvsdb/*.c
         ${CMAKE_SOURCE_DIR}/include/utils/*.c
+        ${CMAKE_SOURCE_DIR}/include/netdev/*.c
         )
 
 list(FILTER ALL_SOURCES EXCLUDE REGEX "third-party/cJSON/tests/.*")
