@@ -13,6 +13,7 @@ struct DefaultConfig *default_config;
 
 int main(int argc, char *argv[]){
 
+    bool exiting = false;
     /* 解析argc命令参数 */
     cmd_parse_option(argc, argv);
 
@@ -32,8 +33,17 @@ int main(int argc, char *argv[]){
 
 
     /* 初始化网卡驱动类 */
-    netdev_init();
-
+    //netdev_init();
+    while (!exiting){
+        /* 处理命令行参数 */
+        //cvs_cmd_process();
+        /* 处理信号 */
+        //cvs_signal_process();
+        /* 处理网卡事件 */
+        //cvs_netdev_process();
+        /* 处理流表事件 */
+        //cvs_flow_process();
+    }
     /*初始化cvs-vswitchd 支持启动unix/tcp 与csv-ctl 通讯*/
 
     /*初始化cvs-vswitchd的网桥*/

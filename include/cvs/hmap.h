@@ -5,24 +5,27 @@
  * hash map 实现
  *
  * */
+#ifndef HMAP_H
+#define HMAP_H
 
-#ifndef CVS_HMAP_H
-#define CVS_HMAP_H
 #include <stddef.h>
-#include <stdint.h>
 
-struct hash_node {
-    size_t hash;
-    struct hash_node *next;
+struct HMapNode {
+    char *key;
+    void *value;
+    struct HMapNode *next;
 };
 
-void hash_init(struct hash_node *hash, size_t size);
+struct HMap{
+    struct HMapNode **buckets;
+    size_t size;
+};
 
-void hash_insert(struct hash_node *hash, size_t size, size_t key);
-
-void hash_remove(struct hash_node *hash, size_t size, size_t key);
-
-struct hash_node *hash_find(struct hash_node *hash, size_t size, size_t key);
-
+struct HMap *hmap_create(size_t size);
+void hmap_put(struct HMap *map, const char *key, void *value);
+void *hmap_get(struct HMap *map, const char *key);
+void hmap_remove(struct HMap *map, const char *key);
+void hmap_destroy(struct HMap *map);
 
 #endif //CVS_HMAP_H
+

@@ -7,6 +7,17 @@
 static struct CvsCmdConfig cvs_cmd_config;
 
 int cmd_parse_option(int argc, char *argv[]){
+    char *help_info = "Usage: cvs-vswitchd [OPTION]...\n"
+                      "  --config  config file path\n"
+                      "  --db      db file path\n"
+                      "  --log     log file path\n"
+                      "  --unix    unix socket path\n"
+                      "  --tcp     tcp socket path\n"
+                      "  --help    help\n";
+    if (argc < 2){
+        printf("%s", help_info);
+        exit(0);
+    }
     for(int i = 0; i < argc; i++){
         if(strcmp(argv[i], "--config") == 0){
             cvs_cmd_config.config = argv[i+1];
@@ -25,13 +36,7 @@ int cmd_parse_option(int argc, char *argv[]){
             cvs_cmd_config.tcp = argv[i];
         }*/
         if(strcmp(argv[i], "--help") == 0){
-            printf("Usage: cvs-vswitchd [OPTION]...\n"
-                   "  --config  config file path\n"
-                   "  --db      db file path\n"
-                   "  --log     log file path\n"
-                   "  --unix    unix socket path\n"
-                   "  --tcp     tcp socket path\n"
-                   "  --help    help\n");
+            printf("%s", help_info);
             exit(0);
         }
     }

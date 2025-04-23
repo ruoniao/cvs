@@ -2,7 +2,7 @@
 // Created by zhaogang on 2025-03-03.
 //
 
-#include "config.h"
+#include "cvs/config.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

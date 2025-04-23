@@ -17,7 +17,10 @@ struct CvsCmdConfig {
     char *tcp;
 };
 
-int cmd_parse_option(int argc, char *argv[]);
-char *cmd_get_option(const char *key);
+int
+cmd_parse_option(int argc, char *argv[]);
+
+char
+*cmd_get_option(const char *key);
 
 #endif //CVS_CMD_H
