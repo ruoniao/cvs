@@ -31,7 +31,6 @@ int main(int argc, char *argv[]){
     /*初始化cvsdb*/
     cvsdb_init(default_config->db_path);
 
-
     /* 初始化网卡驱动类 */
     //netdev_init();
     while (!exiting){
