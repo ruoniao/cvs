@@ -9,7 +9,7 @@
 #include "pthread.h"
 #include "compiler.h"
 
-struct ovsthread_once {
+struct cvsthread_once {
     int done;
     pthread_mutex_t mutex;
 };
@@ -19,20 +19,20 @@ struct ovsthread_once {
  * 这个函数的作用是初始化一个once对象，设置done为false，mutex为一个新的互斥锁。
  * 告诉编译器，当返回值是true时，表示这个函数成功获取了once->mutex锁。
  * */
-static inline bool ovsthread_once_start(struct ovsthread_once *once)
+static inline bool cvsthread_once_start(struct cvsthread_once *once)
 CVS_TRY_LOCK(true,once->mutex);
 
+static bool cvsthread_once_start_(struct cvsthread_once *once)
+CVS_TRY_LOCK(true,once->mutex);
 
-/*ovsthread_once_start 直接实现 */
-//TODO: 这里的实现可以优化，因为这里的需要是用线程锁保证只执行一次，所以大部分都是获取不到锁的，可以使用unlike优化
-static inline bool ovsthread_once_start(struct ovsthread_once *once)
+static inline bool cvs_thread_once_start(struct cvsthread_once *once)
 {
-
-    pthread_mutex_lock(&once->mutex);
-    if (!once->done) {
-        return true;
-    }
-    pthread_mutex_unlock(&once->mutex);
-    return false;
+    /* 是一个宏，提示编译器 !once->done 的情况发生的概率较低，编译器可以基于此进行优化，减少条件判断的开销。
+     * 这个宏通常会影响 CPU 分支预测逻辑，帮助提高性能，特别是在大多数情况下 once->done 已经是 true，不会再执行初始化时。
+     * */
+    return CVS_UNLIKELY(!once->done && cvsthread_once_start_(once));
 }
+void ovsthread_once_done(struct cvsthread_once *once)
+CVS_RELEASES(once->mutex);
+
 #endif //CVS_THREAD_H
