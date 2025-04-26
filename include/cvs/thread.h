@@ -14,6 +14,8 @@ struct cvsthread_once {
     pthread_mutex_t mutex;
 };
 
+#define CVS_THREAD_ONCE_INIT {0, PTHREAD_MUTEX_INITIALIZER}
+
 /* 使用CVS_TRY_LOCK 编译器.h 的宏，通过给函数加注解，使用编译器自带的分析工具分析程序
  * 可能存在的并发问题。
  * 这个函数的作用是初始化一个once对象，设置done为false，mutex为一个新的互斥锁。

@@ -32,22 +32,23 @@ struct HMap *hmap_create(size_t size) {
     return map;
 }
 
-void hmap_put(struct HMap *map, const char *key, void *value) {
+void *hmap_put(struct HMap *map, const char *key, void *value) {
     size_t index = hash(key, map->size);
     struct HMapNode *node = map->buckets[index];
     while (node) {
         if (strcmp(node->key, key) == 0) {
             node->value = value;
-            return;
+            return NULL;
         }
         node = node->next;
     }
     node = malloc(sizeof(struct HMapNode));
-    if (!node) return;
+    if (!node) return NULL;
     node->key = strdup(key);
     node->value = value;
     node->next = map->buckets[index];
     map->buckets[index] = node;
+    return NULL;
 }
 
 void *hmap_get(struct HMap *map, const char *key) {
@@ -62,7 +63,7 @@ void *hmap_get(struct HMap *map, const char *key) {
     return NULL;
 }
 
-void hmap_remove(struct HMap *map, const char *key) {
+void *hmap_remove(struct HMap *map, const char *key) {
     size_t index = hash(key, map->size);
     struct HMapNode *node = map->buckets[index], *prev = NULL;
     while (node) {
@@ -74,14 +75,14 @@ void hmap_remove(struct HMap *map, const char *key) {
             }
             free(node->key);
             free(node);
-            return;
+            return NULL;
         }
         prev = node;
         node = node->next;
     }
 }
 
-void hmap_destroy(struct HMap *map) {
+void *hmap_destroy(struct HMap *map) {
     for (size_t i = 0; i < map->size; i++) {
         struct HMapNode *node = map->buckets[i];
         while (node) {

@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 /* 定义一个map 里面注册*/
-struct net_dev_class {
+struct netdev_class {
     /* 网卡类型, tap af_xdp dpdk */
     const char *type;
 
@@ -23,23 +23,23 @@ struct net_dev_class {
     void (*init)(void );
 
     /* 运行函数 */
-    void (*run)(const struct net_dev_class *netdev);
+    void (*run)(const struct netdev_class *netdev);
 
     /* 等待接收函数 */
-    void (*wait)(const struct net_dev_class *netdev);
+    void (*wait)(const struct netdev_class *netdev);
 
 /*## ------------ ##*/
 /*## ---网卡函数--- ##*/
 /*## ----------- ##*/
 
     /* 发送函数 */
-    void (*send)(const struct net_dev_class *netdev, const void *buf, size_t len);
+    void (*send)(const struct netdev_class *netdev, const void *buf, size_t len);
 
     /* 接收函数 */
-    void (*recv)(const struct net_dev_class *netdev, void *buf, size_t len);
+    void (*recv)(const struct netdev_class *netdev, void *buf, size_t len);
 
     /* 关闭函数 */
-    void (*close)(const struct net_dev_class *netdev);
+    void (*close)(const struct netdev_class *netdev);
 
 };
 
@@ -47,11 +47,10 @@ struct net_dev_class {
 static int netdev_init();
 
 /* 注册驱动 af_xdp tap dpdk */
-static int netdev_register(const struct net_dev_class *netdev);
+static int netdev_register(const struct netdev_class *netdev);
 
 /* 运行网卡设备 */
 int netdev_run();
-
 
 
 

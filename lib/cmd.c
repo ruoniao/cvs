@@ -2,7 +2,7 @@
 // Created by zhaogang on 2025-03-01.
 //
 
-#include "cmd.h"
+#include "cvs/cmd.h"
 
 static struct CvsCmdConfig cvs_cmd_config;
 

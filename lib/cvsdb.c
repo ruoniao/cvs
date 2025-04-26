@@ -3,7 +3,7 @@
 //
 
 #include <stdlib.h>
-#include "cvsdb.h"
+#include "cvsdb/cvsdb.h"
 #include "cvs/clog.h"
 #include "utils/file.h"
 
