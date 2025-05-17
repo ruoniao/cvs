@@ -24,7 +24,7 @@ struct cvsthread_once {
 static inline bool cvsthread_once_start(struct cvsthread_once *once)
 CVS_TRY_LOCK(true,once->mutex);
 
-static bool cvsthread_once_start_(struct cvsthread_once *once)
+bool cvsthread_once_start_(struct cvsthread_once *once)
 CVS_TRY_LOCK(true,once->mutex);
 
 static inline bool cvs_thread_once_start(struct cvsthread_once *once)

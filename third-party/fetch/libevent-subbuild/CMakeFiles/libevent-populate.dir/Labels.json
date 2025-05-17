@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/CMakeFiles/libevent-populate"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/CMakeFiles/libevent-populate.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/CMakeFiles/libevent-populate-complete.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-build.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-configure.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-download.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-install.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-mkdir.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-patch.rule"
+		},
+		{
+			"file" : "/app/source/cvs/third-party/fetch/libevent-subbuild/libevent-populate-prefix/src/libevent-populate-stamp/libevent-populate-test.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"libevent-populate"
+		],
+		"name" : "libevent-populate"
+	}
+}

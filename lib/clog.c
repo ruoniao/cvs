@@ -95,6 +95,9 @@ void log_write(LogLevel level,const char *file, int line, const char *fmt, ...){
     vfprintf(logger.fp, fmt, args);
     va_end(args);
     fprintf(logger.fp, "\n");
+    printf("[%s] [%s:%d] [%s]", time_str, file, line, level_str);
+    printf( fmt, args);
+    printf("\n");
     fflush(logger.fp);
     pthread_mutex_unlock(&logger.mutex);
 }

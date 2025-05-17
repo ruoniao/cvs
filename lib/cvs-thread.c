@@ -6,7 +6,7 @@
 
 /*ovsthread_once_start 直接实现 */
 //TODO: 这里的实现可以优化，因为这里的需要是用线程锁保证只执行一次，所以大部分都是获取不到锁的，可以使用unlike优化
-static bool cvsthread_once_start_(struct cvsthread_once *once)
+bool cvsthread_once_start_(struct cvsthread_once *once)
 {
 
     pthread_mutex_lock(&once->mutex);

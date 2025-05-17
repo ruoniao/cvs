@@ -20,7 +20,17 @@ static int netdev_init(){
             fprintf(stderr, "Failed to create netdev classes hash map\n");
             return -1;
         }
-        netdev_register(&netdev_tap);
+        struct HMapNode *node;
+        for (size_t i = 0; i < netdev_classes->size; i++) {
+            node = netdev_classes->buckets[i];
+            while (node) {
+                const struct netdev_class *netdev = (const struct netdev_class *)node->value;
+                if (netdev && netdev->run) {
+                    netdev->init();
+                }
+                node = node->next;
+            }
+        }
     }
     return 0;
 }

@@ -1,0 +1,3 @@
+repository='https://github.com/libevent/libevent.git'
+module=''
+tag='origin'

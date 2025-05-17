@@ -2,12 +2,13 @@
 // Created by zhaogang on 2025-03-03.
 //
 
-#include "cvs/config.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-
+#include "cvs/config.h"
+#include "cvs/types.h"
 
 
 // 用于去除首尾空格
@@ -27,7 +28,8 @@ int cvs_config_init(const char *config_path, struct CvsConfig **cvs_config) {
     if (config_path == NULL) return -1;
 
     struct CvsConfig *cvs_c = malloc(sizeof(struct CvsConfig));
-    cvs_c->default_config = malloc(sizeof(struct DefaultConfig));
+    cvs_c->default_config = calloc(1, sizeof(struct DefaultConfig));
+    cvs_c->daemon_config = calloc(1, sizeof(struct DaemonConfig));
 
     FILE *fp = fopen(config_path, "r");
     if (fp == NULL) {
@@ -38,46 +40,64 @@ int cvs_config_init(const char *config_path, struct CvsConfig **cvs_config) {
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
+    char current_section[64] = {0};
+
     while ((read = getline(&line, &len, fp)) != -1) {
-        printf("%s", line);
+        // 去除首尾空白字符
+        char *line_trimmed = trim(line); // 不覆盖 line
 
-        // 跳过注释和空行
-        if (*line == '#' || *line == '\n' || *line == '\r' || *line == '[') continue;
+        // 跳过空行和注释
+        if (*line_trimmed == '\0' || *line_trimmed == '#' || *line_trimmed == ';') continue;
 
-        // 去除首尾空格
-        line = trim(line);
+        // 检查是否是分组
+        if (line_trimmed[0] == '[' && line_trimmed[strlen(line_trimmed) - 1] == ']') {
+            strncpy(current_section, line_trimmed + 1, strlen(line_trimmed) - 2);
+            current_section[strlen(line_trimmed) - 2] = '\0';
+            continue;
+        }
 
-        // 查找分隔符的位置（= 或 :）
-        char *delimiter = strchr(line, '=');
-        if (!delimiter) delimiter = strchr(line, ':');  // 支持冒号分隔符
+        // 查找键值分隔符
+        char *delimiter = strchr(line_trimmed, '=');
+        if (!delimiter) delimiter = strchr(line_trimmed, ':');
+        if (!delimiter) continue;
 
-        if (delimiter) {
-            // 分隔符前是键，分隔符后是值
-            *delimiter = '\0';  // 将分隔符转换为字符串结束符
-            char *key = trim(line);
-            char *value = trim(delimiter + 1);
+        *delimiter = '\0';
+        char *key = trim(line_trimmed);
+        char *value = trim(delimiter + 1);
 
-            // 根据键设置对应值
-            if (strcmp(key, "db_path") == 0) {
+        if (strcmp(current_section, "default") == 0) {
+            if (strcmp(key, "db_path") == 0)
                 cvs_c->default_config->db_path = strdup(value);
-            } else if (strcmp(key, "log_path") == 0) {
+            else if (strcmp(key, "log_path") == 0)
                 cvs_c->default_config->log_path = strdup(value);
-            } else if (strcmp(key, "unix_path") == 0) {
-                cvs_c->default_config->unix_path = strdup(value);
-            } else if (strcmp(key, "tcp_path") == 0) {
-                cvs_c->default_config->tcp_path = strdup(value);
-            } else if (strcmp(key, "debug") == 0) {
-                cvs_c->default_config->debug = (strcmp(value, "true") == 0);
+            else if (strcmp(key, "debug") == 0)
+                cvs_c->default_config->debug = strcmp(value, "true") == 0;
+        } else if (strcmp(current_section, "daemon") == 0) {
+            if (strcmp(key, "unix_path") == 0)
+                cvs_c->daemon_config->unix_path = strdup(value);
+            else if (strcmp(key, "tcp_path") == 0)
+                cvs_c->daemon_config->tcp_path = strdup(value);
+            else if (strcmp(key, "host") == 0)
+                cvs_c->daemon_config->host = strdup(value);
+            else if (strcmp(key, "port") == 0)
+                cvs_c->daemon_config->port = atoi(value);
+            else if (strcmp(key, "server_mode") == 0) {
+                if (strcmp(value, "tcp") == 0)
+                    cvs_c->daemon_config->server_mode = MODE_TCP; // TCP
+                else if (strcmp(value, "unix") == 0)
+                    cvs_c->daemon_config->server_mode = MODE_UNIX; // UNIX
             }
         }
+        // 可添加其他分组
     }
-
-    free(line);
+    if(line != NULL)
+        free(line);
     fclose(fp);
 
     *cvs_config = cvs_c;
-    return 1;
+    return 0;
 }
+
 struct DefaultConfig *cvs_config_get_default(struct CvsConfig *cvs_config){
     if(cvs_config == NULL){
         return NULL;

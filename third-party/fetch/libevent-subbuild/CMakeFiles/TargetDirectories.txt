@@ -1,0 +1,3 @@
+/app/source/cvs/third-party/fetch/libevent-subbuild/CMakeFiles/libevent-populate.dir
+/app/source/cvs/third-party/fetch/libevent-subbuild/CMakeFiles/edit_cache.dir
+/app/source/cvs/third-party/fetch/libevent-subbuild/CMakeFiles/rebuild_cache.dir
