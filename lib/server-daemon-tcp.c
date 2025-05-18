@@ -53,13 +53,15 @@ void read_cb(struct bufferevent *bev, void *ctx) {
     *sep = '\0';
     char *op = buf;
     char *payload = sep + 1;
-    void *fn = NULL;
+    handler_fn *fn = NULL;
     if (!router_lookup(op,fn)){
         LOG_ERROR("Handler not found for operation: %s\n", op);
         return;
     };
     if (fn){
-        ((handler_fn)fn)(payload, ctx);
+        struct ServerRequest *serverRequest = (struct ServerRequest*)payload;
+        handler_fn handler_call = (handler_fn)fn;
+        handler_call(serverRequest);
     }
     else bufferevent_write(bev, "unknown operation\n", 18);
 }
@@ -80,6 +82,9 @@ void accept_cb(struct evconnlistener *listener, evutil_socket_t fd,
     bufferevent_enable(bev, EV_READ | EV_WRITE);
 }
 int cvs_server_start(struct ServerConfig *config){
+    // 注册路由
+    router_init();
+
     base = event_base_new();
     if (!base) {
         LOG_ERROR("Could not initialize libevent!\n");
@@ -110,6 +115,12 @@ int cvs_server_start(struct ServerConfig *config){
                                            -1, (struct sockaddr *)&sun, sizeof(sun));
     }
     if (!listener) return -1;
+    event_base_dispatch(base);
+    evconnlistener_free(listener);
+    event_base_free(base);
+    server_config_free(config);
+
+
     pid_t pid = fork();
     // TODO: 还需优化这个地方，只是暂时使用一个线程
     if (pid == 0) {
