@@ -22,7 +22,8 @@ struct CvsPort {
 
 struct CvsBridge{
     char *name;
-    struct CvsPort *port;
+    int port_num;
+    struct CvsPort **port;
 };
 
 struct CvsFlow{
@@ -38,14 +39,15 @@ int cvsdb_flush();
 int cvsdb_free();
 
 int cvsdb_add_bridge(struct CvsBridge *bridge);
-struct CvsDb *cvsdb_get_bridge(struct CvsBridge *bridge);
+
+struct CvsBridge *cvsdb_get_bridge();
 int cvsdb_del_bridge(struct CvsBridge *bridge);
 
 
-int cvsdb_add_port(struct CvsDb bridge_nam, struct CvsPort *port_name);
-int cvsdb_del_port(struct CvsDb bridge_name, struct CvsPort *port_name);
+int cvsdb_add_port(struct CvsPort *port_name);
+int cvsdb_del_port(struct CvsPort *port_name);
 
-int cvsdb_add_flow(struct CvsDb bridge_name, const char *flow_name);
+int cvsdb_add_flow(struct CvsFlow *flow);
 
 
 #endif //CVS_CSVDB_H

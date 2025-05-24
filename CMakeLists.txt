@@ -59,3 +59,9 @@ target_link_libraries(cvs cjson event)
 
 message(STATUS "Include directories: ${CMAKE_INCLUDE_PATH}")
 message(STATUS "Source files: ${ALL_SOURCES}")
+
+
+# === 单元测试二进制 ===
+add_executable(test_cvsdb tests/test_cvsdb.c ${ALL_SOURCES})
+target_include_directories(test_cvsdb PUBLIC ${CMAKE_INCLUDE_PATH})
+target_link_libraries(test_cvsdb cjson event)

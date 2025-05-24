@@ -91,13 +91,20 @@ void log_write(LogLevel level,const char *file, int line, const char *fmt, ...){
     }
     fprintf(logger.fp, "[%s] [%s:%d] [%s] ", time_str, file, line, level_str);
     va_list args;
+    va_list args_copy;
     va_start(args, fmt);
+    va_copy(args_copy, args);
+    // 写入日志内容
     vfprintf(logger.fp, fmt, args);
-    va_end(args);
     fprintf(logger.fp, "\n");
+    // 打印到标准输出
     printf("[%s] [%s:%d] [%s]", time_str, file, line, level_str);
-    printf( fmt, args);
+    //  知识点：printf 用于直接传参，vprintf 用于变参封装后传递（va_list）的场景。不要混用。
+    vprintf( fmt, args_copy);
     printf("\n");
+    va_end(args);
+    va_end(args_copy);
+
     fflush(logger.fp);
     pthread_mutex_unlock(&logger.mutex);
 }

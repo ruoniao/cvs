@@ -37,12 +37,13 @@ int cvsdb_init(char *db_path){
 }
 
 int cvsdb_init_data(){
-    cJSON *bridges = cJSON_CreateObject();
+    cJSON *bridges = cJSON_CreateArray();
     cJSON_AddItemToObject(db->root, "bridges", bridges);
-    cJSON *ports = cJSON_CreateObject();
+    cJSON *ports = cJSON_CreateArray();
     cJSON_AddItemToObject(db->root, "ports", ports);
-
-    cJSON_AddItemToObject(bridges, "name", cJSON_CreateString("br-int"));
+    cJSON *flows = cJSON_CreateArray();
+    cJSON_AddItemToObject(db->root, "flows", flows);
+    //cJSON_AddItemToObject(bridges, "name", cJSON_CreateString("br-int"));
 
     cvsdb_flush();
     return 1;
@@ -88,13 +89,79 @@ int cvsdb_add_bridge(struct CvsBridge *bridge){
     if(bridges == NULL){
         bridges = cJSON_CreateArray();
         cJSON_AddItemToObject(db->root, "bridges", bridges);
+        //cJSON_AddArrayToObject(bridges,NULL);
     }
 
     cJSON *bridge_obj = cJSON_CreateObject();
+    int bridges_len = cJSON_GetArraySize(bridges);
+    for (int i=0;i<=bridges_len;i++) {
+        cJSON *item = cJSON_GetArrayItem(bridges, i);
+        if (item != NULL && cJSON_IsObject(item)) {
+            const char *name = cJSON_GetObjectItem(item, "name")->valuestring;
+            if (strcmp(name, bridge->name) == 0) {
+                LOG_ERROR("Bridge %s already exists\n", bridge->name);
+                return -1; // Bridge already exists
+            }
+        }
+    }
     cJSON_AddItemToObject(bridge_obj, "name", cJSON_CreateString(bridge->name));
-    cJSON_AddItemToObject(bridge_obj, "port", cJSON_CreateString(bridge->port->name));
+    cJSON *ports = cJSON_CreateArray();
+    if (bridge->port != NULL && bridge->port_num > 0) {
+        for (int i = 0; i < bridge->port_num; i++) {
+            cJSON *port_obj = cJSON_CreateObject();
+            cJSON_AddItemToObject(port_obj, "name", cJSON_CreateString(bridge->port[i]->name));
+            //cJSON_AddItemToObject(port_obj, "type", cJSON_CreateString(bridge->port[i].type));
+            //cJSON_AddItemToObject(port_obj, "mac", cJSON_CreateString(bridge->port[i].mac));
+            //cJSON_AddItemToObject(port_obj, "ip", cJSON_CreateString(bridge->port[i].ip));
+            cJSON_AddItemToArray(ports, port_obj);
+        }
+        printf("Add bridge %s with %d ports: %s\n", bridge->name, bridge->port_num,
+                  cJSON_Print(ports));
+        cJSON_AddItemToObject(bridge_obj, "ports", ports);
+    }
+
     cJSON_AddItemToArray(bridges, bridge_obj);
 
     cvsdb_flush();
+    return 1;
+}
+
+int cvsdb_add_flow(struct CvsFlow *flow){
+    cJSON *flows = cJSON_GetObjectItem(db->root, "flows");
+    if(flows == NULL){
+        flows = cJSON_CreateArray();
+        cJSON_AddItemToObject(db->root, "flows", flows);
+        //cJSON_AddArrayToObject(bridges,NULL);
+    }
+    char id_buf[256];  // 注意分配足够的空间
+    snprintf(id_buf, sizeof(id_buf), "%s:%s:%s", flow->bridge, flow->in_port, flow->out_port);
+
+    int flows_len = cJSON_GetArraySize(flows);
+    for (int i = 0;i < flows_len;i++) {
+        cJSON *item = cJSON_GetArrayItem(flows, i);
+        if (item != NULL && cJSON_IsObject(item)) {
+            const char *id = cJSON_GetObjectItem(item, "id")->valuestring;
+
+            if (strcmp(id, id_buf) == 0) {
+                LOG_ERROR("Flow %s already exists\n", flow->id);
+                return -1; // Flow already exists
+            }
+        }
+    }
+    cJSON *flow_obj = cJSON_CreateObject();
+    if (flow->bridge == NULL || flow->in_port == NULL || flow->out_port == NULL) {
+        LOG_ERROR("Flow fields cannot be NULL\n");
+        return -1; // Invalid flow data
+    }
+    cJSON_AddItemToObject(flow_obj, "bridge", cJSON_CreateString(flow->bridge));
+    cJSON_AddItemToObject(flow_obj, "in_port", cJSON_CreateString(flow->in_port));
+    cJSON_AddItemToObject(flow_obj, "out_port", cJSON_CreateString(flow->out_port));
+
+    cJSON_AddItemToObject(flow_obj, "id", cJSON_CreateString(id_buf));
+
+    cJSON_AddItemToArray(flows, flow_obj);
+    cvsdb_flush();
+
+    LOG_INFO("Added flow %s with bridge %s, in_port %s, out_port %s\n", id_buf, flow->bridge, flow->in_port, flow->out_port);
     return 1;
 }
