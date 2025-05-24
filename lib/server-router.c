@@ -16,9 +16,10 @@ struct ServerResponse handler_health_check(struct ServerRequest *request) {
     // Perform health check logic here
     // For example, check if the server is running, database is accessible, etc.
     LOG_DEBUG("Health check passed\n");
-    return (struct ServerResponse) {
-        .data = "OK"
+    struct ServerResponse response = {
+            .data = "OK\n"
     };
+    return response;
 
 }
 
@@ -41,7 +42,7 @@ int router_lookup(const char *path, handler_fn *handler) {
     void *result = hmap_get(RouterMap, path);
     if (result) {
         *handler = (handler_fn)result;
-        return 0;
+        return 1;
     }
-    return -1; // Route not found
+    return 0; // Route not found
 }
