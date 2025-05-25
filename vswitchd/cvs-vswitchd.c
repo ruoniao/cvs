@@ -8,6 +8,7 @@
 #include "server/server-daemon.h"
 
 #include "cvsdb/cvsdb.h"
+#include "netdev/netdev.h"
 #include <unistd.h>
 
 
@@ -42,7 +43,6 @@ int main(int argc, char *argv[]){
             cvs_config->daemon_config->tcp_path);
     cvs_server_start(daemon_config);
 
-
     /* 初始化网卡驱动类 */
     //netdev_init();
     while (!exiting){
@@ -54,20 +54,18 @@ int main(int argc, char *argv[]){
         //cvs_netdev_process();
         /* 处理流表事件 */
         //cvs_flow_process();
-        LOG_DEBUG("cvs-vswitchd running... ");
-        sleep(5);
+        struct CvsDb *db_ptr = cvsdb_get_db();
+        struct cJSON *port_ptr = NULL;
+        FOR_EACH_PORT(db_ptr->root, bridge_idx, port_idx, port_ptr)
+           LOG_DEBUG("Monitor Port Name: %s",cJSON_GetObjectItem(port_ptr, "name")->valuestring);
+        }}
+
+        netdev_run();
+        //sleep(1);
     }
-    /*初始化cvs-vswitchd 支持启动unix/tcp 与csv-ctl 通讯*/
-
-    /*初始化cvs-vswitchd的网桥*/
-    /*初始化cvs-vswitchd的net管理，支持poll/epoll/dpdk模式收发*/
-
-    /*初始化cvs-vswitchd的流表*/
 
 cleanup:
     free(cvs_config);
     cvsdb_free();
-//    cvs_config_cleanup();
-//    cvs_log_cleanup();
     return 1 ;
 }

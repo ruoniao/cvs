@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="Remote Host (650ef84f-5963-47c7-aa6e-8f6f1f05f9c4)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" confirmBeforeDeletion="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Remote Host (650ef84f-5963-47c7-aa6e-8f6f1f05f9c4)" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" confirmBeforeDeletion="false" showNewOnSourceInSync="false">
     <option name="confirmBeforeDeletion" value="false" />
     <option name="confirmBeforeUploading" value="false" />
     <serverData>

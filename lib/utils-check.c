@@ -4,6 +4,7 @@
 #include "utils/check.h"
 #include "cvs/clog.h"
 
+
 int health_check_handler(void) {
     // Perform health check logic here
     // For example, check if the server is running, database is accessible, etc.

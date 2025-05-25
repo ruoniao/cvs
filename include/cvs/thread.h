@@ -15,6 +15,7 @@ struct cvsthread_once {
 };
 
 #define CVS_THREAD_ONCE_INIT {0, PTHREAD_MUTEX_INITIALIZER}
+#define CVS_THREAD_ONCE_NL_SOCK {0, PTHREAD_MUTEX_INITIALIZER}
 
 /* 使用CVS_TRY_LOCK 编译器.h 的宏，通过给函数加注解，使用编译器自带的分析工具分析程序
  * 可能存在的并发问题。

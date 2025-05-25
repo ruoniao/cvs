@@ -20,17 +20,20 @@ static int netdev_init(){
             fprintf(stderr, "Failed to create netdev classes hash map\n");
             return -1;
         }
+        netdev_register_all();
+
         struct HMapNode *node;
         for (size_t i = 0; i < netdev_classes->size; i++) {
             node = netdev_classes->buckets[i];
             while (node) {
                 const struct netdev_class *netdev = (const struct netdev_class *)node->value;
                 if (netdev && netdev->run) {
-                    netdev->init();
+                    netdev->init(netdev);
                 }
                 node = node->next;
             }
         }
+        ovsthread_once_done(&once);
     }
     return 0;
 }
@@ -45,6 +48,10 @@ static int netdev_register(const struct netdev_class *netdev) {
     /* 注册网卡设备 */
     hmap_put(netdev_classes, netdev->type, (void *)netdev);
     return 0;
+}
+
+static int netdev_register_all(){
+    netdev_register(&netdev_veth_class);
 }
 
 

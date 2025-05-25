@@ -39,3 +39,21 @@ int file_create(const char *db_path){
     LOG_DEBUG("创建文件 %s 成功\n",db_path);
     return 1;
 }
+
+char *file_read_all(FILE *fp) {
+    if (fp == NULL) return NULL;
+
+    fseek(fp, 0, SEEK_END);
+    long len = ftell(fp);
+    if (len < 0) return NULL;
+    rewind(fp);
+
+    char *buffer = (char *)malloc(len + 1);
+    if (!buffer) return NULL;
+
+    size_t read_bytes = fread(buffer, 1, len, fp);
+    buffer[read_bytes] = '\0';
+
+    return buffer;
+}
+

@@ -7,7 +7,7 @@
 #include "cvsdb/cvsdb.h"
 #include "cvs/clog.h"
 
-#define db_path "/tmp/cvsdb1.json"
+#define db_path "/etc/cvs/cvs.db"
 #define log_path "/tmp/cvs.log"
 
 
@@ -22,9 +22,11 @@ int main(){
     cvsdb_init(db_path);
     struct CvsPort ports1 = {
             .name = "port1",
+            .type = "veth"
     };
     struct CvsPort ports2 = {
             .name = "port2",
+            .type = "veth"
     };
     struct CvsPort *ports[] = {
             &ports1,
@@ -51,4 +53,12 @@ int main(){
 
     cvsdb_add_flow(&flow1);
     cvsdb_add_flow(&flow2);
+
+    struct CvsDb *db_ptr = cvsdb_get_db();
+    struct cJSON *port_ptr = NULL;
+    FOR_EACH_PORT(db_ptr->root, bridge_idx, port_idx, port_ptr)
+        LOG_DEBUG("Monitor Port Name: %s",cJSON_GetObjectItem(port_ptr, "name")->valuestring);
+    }}
+
+
 }

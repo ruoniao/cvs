@@ -9,6 +9,8 @@
 #define CVS_NETDEV_H
 #include <stdio.h>
 
+#define IFNAMSIZ 32
+
 /* 定义一个map 里面注册*/
 struct netdev_class {
     /* 网卡类型, tap af_xdp dpdk */
@@ -20,7 +22,7 @@ struct netdev_class {
 
 
     /* 初始化函数 */
-    void (*init)(void );
+    void (*init)(const struct netdev_class *netdev);
 
     /* 运行函数 */
     void (*run)(const struct netdev_class *netdev);
@@ -49,9 +51,15 @@ static int netdev_init();
 /* 注册驱动 af_xdp tap dpdk */
 static int netdev_register(const struct netdev_class *netdev);
 
+/* 注册所有网卡设备 */
+static int netdev_register_all();
+
 /* 运行网卡设备 */
 int netdev_run();
 
 
+
+/* veth 设备网卡class */
+extern const struct netdev_class netdev_veth_class;
 
 #endif //CVS_NETDEV_H

@@ -27,8 +27,11 @@ int cvsdb_init(char *db_path){
     if(db == NULL){
         return -1;
     }
+    char *data = file_read_all(fp);
     db->db_path = db_path;
-    db->root = cJSON_Parse(db_path);
+    db->data = data;
+    db->fd = fp;
+    db->root = cJSON_Parse(data);
     if(db->root == NULL){
         db->root = cJSON_CreateObject();
         cvsdb_init_data();
@@ -37,14 +40,25 @@ int cvsdb_init(char *db_path){
 }
 
 int cvsdb_init_data(){
-    cJSON *bridges = cJSON_CreateArray();
-    cJSON_AddItemToObject(db->root, "bridges", bridges);
-    cJSON *ports = cJSON_CreateArray();
-    cJSON_AddItemToObject(db->root, "ports", ports);
-    cJSON *flows = cJSON_CreateArray();
-    cJSON_AddItemToObject(db->root, "flows", flows);
-    //cJSON_AddItemToObject(bridges, "name", cJSON_CreateString("br-int"));
+    cJSON *bridges = cJSON_GetObjectItem(db->root, "bridges");
+    if(bridges == NULL){
+        bridges = cJSON_CreateArray();
+        cJSON_AddItemToObject(db->root, "bridges", bridges);
+    }
+    /*
+    赶进度，暂时不关注这个
+    cJSON *ports = cJSON_GetObjectItem(db->root, "ports");
+    if(ports == NULL){
+        ports = cJSON_CreateArray();
+        cJSON_AddItemToObject(db->root, "ports", ports);
+    }*/
+    cJSON *flows = cJSON_GetObjectItem(db->root, "flows");
+    if(flows == NULL){
+        flows = cJSON_CreateArray();
+        cJSON_AddItemToObject(db->root, "flows", flows);
+    }
 
+    //cJSON_AddItemToObject(bridges, "name", cJSON_CreateString("br-int"));
     cvsdb_flush();
     return 1;
 }
@@ -79,10 +93,19 @@ int cvsdb_flush(){
 }
 int cvsdb_free(){
     //cJSON_Delete(db->root);
+    free(db->fd);
+    free(db->data);
     free(db);
     return 1;
 }
 
+struct CvsDb *cvsdb_get_db(){
+    if(db == NULL){
+        LOG_ERROR("db is NULL\n");
+        return NULL;
+    }
+    return db;
+}
 
 int cvsdb_add_bridge(struct CvsBridge *bridge){
     cJSON *bridges = cJSON_GetObjectItem(db->root, "bridges");
