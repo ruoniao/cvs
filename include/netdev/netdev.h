@@ -8,6 +8,7 @@
 #ifndef CVS_NETDEV_H
 #define CVS_NETDEV_H
 #include <stdio.h>
+#include <stdbool.h>
 
 #define IFNAMSIZ 32
 
@@ -58,8 +59,8 @@ static int netdev_register_all();
 int netdev_run();
 
 
-
 /* veth 设备网卡class */
 extern const struct netdev_class netdev_veth_class;
+
 
 #endif //CVS_NETDEV_H

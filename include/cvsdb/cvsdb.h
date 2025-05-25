@@ -20,10 +20,13 @@ struct CvsDb{
 
 struct CvsPort {
     char *name;
+    int ifindex;
     char *type;
     char *mac;
     char *ip;
     char *bridge;
+    cJSON_bool is_up; // 是否启用
+    cJSON_bool is_running; // 是否运行
 };
 
 struct CvsBridge{
@@ -53,6 +56,7 @@ int cvsdb_del_bridge(struct CvsBridge *bridge);
 
 
 int cvsdb_add_port(struct CvsPort *port_name);
+int cvsdb_update_port(struct CvsPort *port_name);
 
 struct CvsPort *cvsdb_get_port_list();
 

@@ -15,6 +15,8 @@ struct rtnetlink_change {
     __u16 nlmsg_type;
     int ifindex;
     char ifname[IFNAMSIZ];
+    bool is_up;
+    bool is_running;
 };
 
 

@@ -148,6 +148,34 @@ int cvsdb_add_bridge(struct CvsBridge *bridge){
     cvsdb_flush();
     return 1;
 }
+int cvsdb_update_port(struct CvsPort *port){
+    struct cJSON *port_ptr = NULL;
+    FOR_EACH_PORT(db->root, bridge_idx, port_idx, port_ptr)
+        if (strcmp(cJSON_GetObjectItem(port_ptr, "name")->valuestring, port->name) == 0) {
+            // 更新端口信息
+            if(cJSON_GetObjectItem(port_ptr, "ifindex") == NULL ){
+                cJSON_AddItemToObject(port_ptr, "ifindex", cJSON_CreateNumber(port->ifindex));
+            } else {
+                cJSON_ReplaceItemInObject(port_ptr, "ifindex", cJSON_CreateNumber(port->ifindex));
+            }
+            if(cJSON_GetObjectItem(port_ptr, "is_up") == NULL ){
+                cJSON_AddItemToObject(port_ptr, "is_up", cJSON_CreateBool(port->is_up));
+            } else {
+                cJSON_ReplaceItemInObject(port_ptr, "is_up", cJSON_CreateBool(port->is_up));
+            }
+            if(cJSON_GetObjectItem(port_ptr, "is_running") == NULL ){
+                cJSON_AddItemToObject(port_ptr, "is_running", cJSON_CreateBool(port->is_running));
+            } else {
+                cJSON_ReplaceItemInObject(port_ptr, "is_running", cJSON_CreateBool(port->is_running));
+            }
+            cvsdb_flush();
+            LOG_INFO("Updated port %s in bridge %s\n", port->name, port->bridge);
+            return 1;
+        }
+    }}
+}
+
+
 
 int cvsdb_add_flow(struct CvsFlow *flow){
     cJSON *flows = cJSON_GetObjectItem(db->root, "flows");

@@ -9,7 +9,7 @@
 #include "cvs/clog.h"
 #include "netdev/netlink-sock.h"
 #include "netdev/netlink-netdev.h"
-
+#include "cvsdb/cvsdb.h"
 
 
 void netdev_veth_init(const struct netdev_class *netdev)
@@ -40,6 +40,15 @@ void netdev_veth_run(const struct netdev_class *netdev)
             if(!error){
                 LOG_INFO("Netlink message type: %d, ifindex: %d, ifname: %s",
                          change.nlmsg_type, change.ifindex, change.ifname);
+                if((sizeof change.ifname) != 0) {
+                    struct CvsPort changed_port = {
+                            .name = change.ifname,
+                            .ifindex = change.ifindex,
+                            .is_up = change.is_up,
+                            .is_running = change.is_running
+                    };
+                    cvsdb_update_port(&changed_port);
+                }
             } else{
                 LOG_ERROR("Failed to parse netlink message: %d", error);
             }

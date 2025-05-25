@@ -3,6 +3,7 @@
 //
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#include <net/if.h>
 #include "netdev/netdev.h"
 #include "cvs/clog.h"
 #include "netdev/netlink-sock.h"
@@ -66,8 +67,13 @@ int rtnetlink_parse_msg(const void *buffer, struct rtnetlink_change *change) {
                 break;
             }
         }
+        // 判断网卡是否UP
+        bool is_up = (ifi->ifi_flags & IFF_UP) != 0;
+        change->is_up = is_up;
+        bool is_running = (ifi->ifi_flags & IFF_RUNNING) != 0;
+        change->is_running = is_running;
         return 0;
-    } else if (nlh->nlmsg_type == RTM_DELLINK) {
+    }else if (nlh->nlmsg_type == RTM_DELLINK) {
         return 0; // 只处理删除链接消息
     }
 
