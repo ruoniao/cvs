@@ -63,4 +63,6 @@ int netdev_run();
 extern const struct netdev_class netdev_veth_class;
 
 
+/* veth 设备网卡class */
+extern const struct netdev_class netdev_dpdk_class;
 #endif //CVS_NETDEV_H

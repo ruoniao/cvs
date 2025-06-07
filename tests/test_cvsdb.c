@@ -28,9 +28,19 @@ int main(){
             .name = "port2",
             .type = "veth"
     };
+    struct CvsPort ports3 = {
+            .name = "ens160",
+            .type = "dpdk"
+    };
+    struct CvsPort ports4 = {
+            .name = "ens192",
+            .type = "dpdk"
+    };
     struct CvsPort *ports[] = {
             &ports1,
             &ports2,
+            &ports3,
+            &ports4
 
     };
     struct CvsBridge bridge = {
@@ -50,9 +60,22 @@ int main(){
         .in_port = "port2",
         .out_port = "port1"
     };
+    struct CvsFlow flow3 = {
+            .bridge = "br0",
+            .in_port = "ens160",
+            .out_port = "ens192"
+    };
+    struct CvsFlow flow4 = {
+            .bridge = "br0",
+            .in_port = "ens192",
+            .out_port = "ens160\",\n"
+                        "            .out_port = \"ens192"
+    };
 
     cvsdb_add_flow(&flow1);
     cvsdb_add_flow(&flow2);
+    cvsdb_add_flow(&flow3);
+    cvsdb_add_flow(&flow4);
 
     struct CvsDb *db_ptr = cvsdb_get_db();
     struct cJSON *port_ptr = NULL;

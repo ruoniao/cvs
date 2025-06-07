@@ -52,6 +52,9 @@ static int netdev_register(const struct netdev_class *netdev) {
 
 static int netdev_register_all(){
     netdev_register(&netdev_veth_class);
+#ifdef CVS_DPDK
+    netdev_register(&netdev_dpdk_class);
+#endif
 }
 
 
