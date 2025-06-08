@@ -25,6 +25,8 @@ uint8_t f_quit = 0; // Global flag to indicate if we should quit
 /* DPDK日志类型 */
 int netdev_logtype;
 
+
+/////////////////////////////////////////////定义port相关/////////////////////////////////////////////
 /*
  * Display or mask ether events
  * Default to all events except VF_MBOX
@@ -53,6 +55,37 @@ static const char * const eth_event_desc[] = {
         [RTE_ETH_EVENT_FLOW_AGED] = "flow aged",
         [RTE_ETH_EVENT_MAX] = NULL,
 };
+/* 记录端口 dev start 的数组*/
+static bool port_started[RTE_MAX_ETHPORTS] = {false};
+static struct rte_eth_conf port_conf = {
+        .rxmode = {
+                .split_hdr_size = 0,
+        },
+        .txmode = {
+                .mq_mode = ETH_MQ_TX_NONE,
+        },
+};
+
+
+#define MAX_PKT_BURST 32
+#define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
+#define MEMPOOL_CACHE_SIZE 256
+
+/*
+ * Configurable number of RX/TX ring descriptors
+ */
+#define RTE_TEST_RX_DESC_DEFAULT 1024
+#define RTE_TEST_TX_DESC_DEFAULT 1024
+static uint16_t nb_rxd = RTE_TEST_RX_DESC_DEFAULT;
+static uint16_t nb_txd = RTE_TEST_TX_DESC_DEFAULT;
+
+struct rte_mempool * cvs_pktmbuf_pool = NULL;
+
+
+/* A tsc-based timer responsible for triggering statistics printout */
+/* 一个基于TSC的定时器，用于触发统计信息的打印 */
+static uint64_t timer_period = 10; /* default period is 10 seconds */
+
 
 /* 定义了RTE_LIB_LATENCYSTATS
  * RTE_LIB_LATENCYSTATS 是一个专门设计的库，用于测量和分析网络数据包在应用程序处理过程中的
@@ -167,6 +200,8 @@ register_eth_event_callback(void)
                       event, rte_strerror(rte_errno));
             return ret;
         }
+        LOG_INFO("Registered callback for event %s",
+                 eth_event_desc[event] ? eth_event_desc[event] : "unknown");
     }
     return 0;
 }
@@ -197,15 +232,129 @@ signal_handler(int signum)
     }
 }
 
-void netdev_dpdk_init(const struct netdev_class *netdev)
+void netdev_dpdk_run(const struct netdev_class *netdev)
 {
     LOG_INFO("Init dpdk netdev class");
+    int ret;
+    uint16_t nb_ports;
+    uint16_t nb_ports_available = 0;
+    uint16_t portid;
+
+    nb_ports = rte_eth_dev_count_avail();
+    if (nb_ports == 0) {
+        rte_exit(EXIT_FAILURE, "No Ethernet ports - bye\n");
+        return;
+    }
+    LOG_INFO("Number of available Ethernet ports: %d", nb_ports);
+
+
+    /* 遍历所有可用的以太网端口 */
+    struct CvsPort cvsdb_port = {
+            .name = "",
+            .ifindex = 0,
+            .is_up = false,
+            .is_running = false
+    };
+    RTE_ETH_FOREACH_DEV(portid) {
+        struct rte_eth_rxconf rxq_conf;
+        struct rte_eth_txconf txq_conf;
+        struct rte_eth_dev_info dev_info;
+        struct rte_eth_link link;
+        struct rte_eth_conf local_port_conf = port_conf;
+        /* 获取网卡 devinfo */
+        ret = rte_eth_dev_info_get(portid, &dev_info);
+        if (ret < 0) {
+            LOG_ERROR("Failed to get device info for port %u: %s",
+                      portid, rte_strerror(rte_errno));
+            continue;
+        }
+
+        if (rte_eth_dev_is_valid_port(portid)){
+            if (!port_started[portid]) {
+                /* 1. 配置网卡configure */
+                ret = rte_eth_dev_configure(portid, 1, 1, &local_port_conf);
+                if (ret < 0) {
+                    LOG_ERROR("rte_eth_dev_configure(%u) failed: %s", portid, rte_strerror(-ret));
+                    continue;
+                }
+                /* 2. 配置rx tx 描述符数量*/
+                ret = rte_eth_dev_adjust_nb_rx_tx_desc(portid, &nb_rxd,
+                                                       &nb_txd);
+                if (ret < 0) {
+                    LOG_ERROR("rte_eth_dev_adjust_nb_rx_tx_desc(%u) failed: %s",
+                              portid, rte_strerror(-ret));
+                    continue;
+                }
+                /* 3. 配置rx 队列 */
+                rxq_conf = dev_info.default_rxconf;
+                rxq_conf.offloads = local_port_conf.rxmode.offloads;
+                ret = rte_eth_rx_queue_setup(portid, 0, nb_rxd,
+                                             rte_eth_dev_socket_id(portid),
+                                             &rxq_conf,
+                                             cvs_pktmbuf_pool);
+                if (ret < 0)
+                    rte_exit(EXIT_FAILURE, "rte_eth_rx_queue_setup:err=%d, port=%u\n",
+                             ret, portid);
+
+                /* 4. 配置tx 队列 */
+                fflush(stdout);
+                txq_conf = dev_info.default_txconf;
+                txq_conf.offloads = local_port_conf.txmode.offloads;
+                ret = rte_eth_tx_queue_setup(portid, 0, nb_txd,
+                                             rte_eth_dev_socket_id(portid),
+                                             &txq_conf);
+
+                if (ret < 0) {
+                    LOG_ERROR("rte_eth_tx_queue_setup(%u) failed: %s", portid, rte_strerror(-ret));
+                    continue;
+                }
+                /* 5. 启动port  */
+                ret = rte_eth_dev_start(portid);
+                if (ret == 0) {
+                    port_started[portid] = true;
+                } else {
+                    LOG_ERROR("rte_eth_dev_start(%u) failed: %s", portid, rte_strerror(-ret));
+                }
+            }
+        }
+
+        rte_eth_link_get(portid, &link);
+        LOG_INFO("Port %u: %s", portid, dev_info.device->name);
+        cvsdb_port.name = (char *)dev_info.device->name;
+        cvsdb_port.ifindex = portid;
+        cvsdb_port.is_up = link.link_status;
+        cvsdb_port.is_running = link.link_status;
+        if(link.link_status){
+            LOG_INFO("Port %u: Link UP - speed %u Mbps - %s",
+                     portid,
+                     link.link_speed,
+                     link.link_duplex == ETH_LINK_FULL_DUPLEX ? "full-duplex" : "half-duplex");
+            // TODO: 1.这个link down目测不管用； 2.重新抽取配置网卡函数  3.mac地址获取
+            // 4.mbuf的创建和新添加端口时的影响，以及cvs的队列绑定策略 5.CMocka单元测试使用
+
+            rte_eth_dev_set_link_down(portid);
+        } else {
+            LOG_INFO("Port %u: Link DOWN", portid);
+            rte_eth_dev_set_link_up(portid);
+        }
+        /* 更新端口信息到数据库 */
+        cvsdb_update_port(&cvsdb_port);
+
+        nb_ports_available++;
+    }
+
 }
 
-static void netdev_dpdk_run_(const struct netdev_class *netdev){
+static void netdev_dpdk_init_(const struct netdev_class *netdev) {
     /* Diagnostics “诊断”的缩写 */
     int diag;
     int ret;
+    uint16_t nb_ports;
+    uint16_t nb_ports_available = 0;
+    uint16_t portid, last_port;
+    unsigned int nb_mbufs;
+    unsigned int nb_lcores = 2;
+
     LOG_INFO("Running dpdk netdev class: %s", netdev->type);
     /* 注册信号处理函数，比如退出的*/
     /*中断信号*/
@@ -215,20 +364,22 @@ static void netdev_dpdk_run_(const struct netdev_class *netdev){
 
     /* 创建日志打印对象 */
     netdev_logtype = rte_log_register("netdev");
-    if (netdev_logtype < 0 ){
+    if (netdev_logtype < 0) {
         LOG_ERROR("Failed to register netdev log type");
         rte_exit(EXIT_FAILURE, "Failed to register netdev log type\n");
     }
     rte_log_set_level(netdev_logtype, RTE_LOG_DEBUG);
 
     /* 初始化DPDK环境 */
-    diag = rte_eal_init(0, NULL);
-    if (diag < 0){
+    int argc = 1;
+    char *argv[] = { "cvs_dpdk_app", NULL };
+    diag = rte_eal_init(argc, argv);
+    if (diag < 0) {
         LOG_ERROR("Failed to initialize DPDK EAL: %s", rte_strerror(rte_errno));
         rte_exit(EXIT_FAILURE, "Failed to initialize DPDK EAL\n");
     }
 
-    if (rte_eal_process_type() == RTE_PROC_PRIMARY) {
+    if (rte_eal_process_type() == RTE_PROC_SECONDARY) {
         rte_exit(EXIT_FAILURE, "DPDK EAL is not running in primary process\n");
     }
 
@@ -237,6 +388,20 @@ static void netdev_dpdk_run_(const struct netdev_class *netdev){
         LOG_ERROR("Failed to register Ethernet event callback: %s", rte_strerror(rte_errno));
         rte_exit(EXIT_FAILURE, "Failed to register Ethernet event callback\n");
     }
+
+    /*  *是乘 */
+    timer_period *= rte_get_timer_hz();
+
+    nb_mbufs = RTE_MAX(nb_ports * (nb_rxd + nb_txd + MAX_PKT_BURST +
+                                   nb_lcores * MEMPOOL_CACHE_SIZE), 8192U);
+
+    /* create the mbuf pool */
+    cvs_pktmbuf_pool = rte_pktmbuf_pool_create("mbuf_pool", nb_mbufs,
+                                                 MEMPOOL_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE,
+                                                 rte_socket_id());
+    if (cvs_pktmbuf_pool == NULL)
+        rte_exit(EXIT_FAILURE, "Cannot init mbuf pool\n");
+
 #ifdef RTE_LIB_PDUMP
     /**
      *初始化 DPDK 的 pdump 框架，用于捕获以太网设备的数据包（接收或发送方向），
@@ -246,19 +411,11 @@ static void netdev_dpdk_run_(const struct netdev_class *netdev){
 #endif
 }
 
-void netdev_dpdk_run(const struct netdev_class *netdev){
-    int pid;
+
+void netdev_dpdk_init(const struct netdev_class *netdev){
     static struct cvsthread_once once = CVS_THREAD_ONCE_DPDK;
     if (cvs_thread_once_start(&once)) {
-        pid = fork();
-        if (pid < 0) {
-            LOG_ERROR("Failed to fork process for DPDK netdev: %s", strerror(errno));
-            rte_exit(EXIT_FAILURE, "Failed to fork process for DPDK netdev\n");
-        } else if (pid == 0) {
-            /* 子进程运行 DPDK */
-            netdev_dpdk_run_(netdev);
-            exit(0); // 子进程完成后退出
-        }
+        netdev_dpdk_init_(netdev);
         ovsthread_once_done(&once);
     }
 }

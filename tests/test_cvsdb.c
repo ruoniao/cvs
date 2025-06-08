@@ -29,11 +29,11 @@ int main(){
             .type = "veth"
     };
     struct CvsPort ports3 = {
-            .name = "ens160",
+            .name = "0000:03:00.0",
             .type = "dpdk"
     };
     struct CvsPort ports4 = {
-            .name = "ens192",
+            .name = "0000:0b:00.0",
             .type = "dpdk"
     };
     struct CvsPort *ports[] = {
@@ -62,14 +62,13 @@ int main(){
     };
     struct CvsFlow flow3 = {
             .bridge = "br0",
-            .in_port = "ens160",
-            .out_port = "ens192"
+            .in_port = "0000:03:00.0",
+            .out_port = "0000:0b:00.0"
     };
     struct CvsFlow flow4 = {
             .bridge = "br0",
-            .in_port = "ens192",
-            .out_port = "ens160\",\n"
-                        "            .out_port = \"ens192"
+            .in_port = "0000:0b:00.0",
+            .out_port = "0000:03:00.0"
     };
 
     cvsdb_add_flow(&flow1);

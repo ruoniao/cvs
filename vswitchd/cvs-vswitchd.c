@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
         }}
 
         netdev_run();
-        //sleep(1);
+        sleep(1);
     }
 
 cleanup:

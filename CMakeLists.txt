@@ -143,6 +143,10 @@ target_include_directories(cvs PRIVATE ${CMAKE_INCLUDE_PATH})
 target_link_libraries(cvs PRIVATE cjson event ${DPDK_LIBRARIES})
 
 
+################################## 7.5  定义 cvs 的宏 #####################################
+target_compile_definitions(cvs PRIVATE CVS_DPDK)
+
+
 
 
 # === 单元测试二进制 ===

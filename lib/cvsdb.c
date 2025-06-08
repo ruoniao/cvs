@@ -173,6 +173,7 @@ int cvsdb_update_port(struct CvsPort *port){
             return 1;
         }
     }}
+    LOG_ERROR("Port %s not found in any bridge\n", port->name);
 }
 
 

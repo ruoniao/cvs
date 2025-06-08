@@ -30,7 +30,7 @@ void netdev_veth_run(const struct netdev_class *netdev)
         // uint64_t 跨平台一致
         uint64_t buffer[4096/8];
         // nl_sock_recv 返回错误码，正确返回0
-        error = nl_sock_recv(sock, buffer, sizeof(buffer),true);
+        error = nl_sock_recv(sock, buffer, sizeof(buffer),false);
         if (!error) {
             // 处理接收到的 netlink 消息
             // 这里可以添加对 netlink 消息的具体处理逻辑
